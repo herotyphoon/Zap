@@ -50,12 +50,20 @@ const userSchema = new Schema({
 );
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+    if (!candidatePassword) return false;
+
+    if (!this.password) {
+        throw new Error(
+            'Password not loaded. Use .select("+password") before comparePassword().'
+        );
+    }
+
+    return await bcrypt.compare(candidatePassword, this.password);
 };
 
 userSchema.pre('save', async function () {
     if (!this.isModified('password')) return;
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
 });
 
