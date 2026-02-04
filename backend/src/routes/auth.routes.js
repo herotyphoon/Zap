@@ -2,10 +2,10 @@ const express = require('express');
 
 const { handleSignUp, handleLogin, handleLogout, handleForgotPassword, handleResetPassword } = require('../controllers/auth.controllers.js');
 const { validateSignupRequest } = require('../middleware/auth/validateSignupRequest.middleware.js');
-const { checkAuthorization } = require('../middleware/auth.middleware.js');
 const { validateLogin } = require('../middleware/auth/validateLoginRequest.middleware.js');
 const { validateForgotPasswordRequest } = require('../middleware/auth/validateForgotPasswordRequest.middleware.js');
 const { validateResetPasswordRequest } = require('../middleware/auth/validateResetPasswordRequest.middleware.js');
+const { checkAuthorization } = require('../middleware/auth.middleware.js');
 
 const router = express.Router();
 

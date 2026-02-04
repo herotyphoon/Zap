@@ -2,6 +2,7 @@ const ms = require('ms');
 
 const User = require('../models/user.model.js');
 const PasswordResets = require('../models/passwordResets.model.js');
+const UserSettings = require('../models/userSettings.model.js');
 const { generateToken } = require('../services/auth.service.js');
 const { generateResetPasswordToken } = require('../utils/generateForgotPasswordToken.util.js')
 
@@ -19,17 +20,30 @@ async function handleSignUp(req, res) {
             throw new Error('JWT_EXPIRE has invalid format');
         }
 
-        const newUser = await User.create({
-            username,
-            fullName,
-            password,
-            avatarURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=4299e1&color=fff`
-        });
+        const session = await User.startSession();
+        let newUser;
+        try {
+            session.startTransaction();
+            [newUser] = await User.create([{
+                username,
+                fullName,
+                password,
+                avatarURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=4299e1&color=fff`
+            }], { session });
 
-        await PasswordResets.create({
-            userId: newUser._id,
-            token: generateResetPasswordToken(),
-        });
+            await UserSettings.create([{ userId: newUser._id }], { session });
+            await PasswordResets.create([{
+                userId: newUser._id,
+                token: generateResetPasswordToken(),
+            }], { session });
+
+            await session.commitTransaction();
+        } catch (err) {
+            await session.abortTransaction();
+            throw err;
+        } finally {
+            await session.endSession();
+        }
 
         const token = generateToken(newUser);
 
