@@ -33,10 +33,6 @@ const userSchema = new Schema({
         minlength: 2,
         maxlength: 200,
     },
-    birthdate: {
-        type: Date,
-        required: false,
-    },
     lastSeenAt: {
         type: Date,
         required: false,
